@@ -48,12 +48,14 @@ struct tjson_value {
 tjson_value *tjson_parse_file(const char *path);
 void tjson_free(tjson_value *value);
 
-int tjson_isstring(tjson_value *value);
-int tjson_isnumber(tjson_value *value);
-int tjson_isboolean(tjson_value *value);
-int tjson_isnull(tjson_value *value);
-int tjson_isobject(tjson_value *value);
-int tjson_isarray(tjson_value *value);
+tjson_valuetype tjson_gettype(const tjson_value *value);
+int tjson_isstring(const tjson_value *value);
+int tjson_isnumber(const tjson_value *value);
+int tjson_isboolean(const tjson_value *value);
+int tjson_isnull(const tjson_value *value);
+int tjson_isobject(const tjson_value *value);
+int tjson_isarray(const tjson_value *value);
+
 
 #define TJSON_DEBUG() printf("%s:%d\n", __func__, __LINE__)
 

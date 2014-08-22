@@ -10,12 +10,13 @@
         while (isspace(**str)) (*str)++;\
     } while (0)
 
-int tjson_isstring(tjson_value *value) { return value ? TJSON_TYPE_STRING == value->type : 0; }
-int tjson_isnumber(tjson_value *value) { return value ? TJSON_TYPE_NUMBER == value->type : 0; }
-int tjson_isboolean(tjson_value *value) { return value ? TJSON_TYPE_BOOLEAN == value->type : 0; }
-int tjson_isnull(tjson_value *value) { return value ? TJSON_TYPE_NULL == value->type : 0; }
-int tjson_isobject(tjson_value *value) { return value ? TJSON_TYPE_OBJECT == value->type : 0; }
-int tjson_isarray(tjson_value *value) { return value ? TJSON_TYPE_ARRAY == value->type : 0; }
+tjson_valuetype tjson_gettype(const tjson_value *value) { return value ? value->type : TJSON_TYPE_ERROR; }
+int tjson_isstring(const tjson_value *value) { return TJSON_TYPE_STRING == tjson_gettype(value); }
+int tjson_isnumber(const tjson_value *value) { return TJSON_TYPE_NUMBER == tjson_gettype(value); }
+int tjson_isboolean(const tjson_value *value) { return TJSON_TYPE_BOOLEAN == tjson_gettype(value); }
+int tjson_isnull(const tjson_value *value) { return TJSON_TYPE_NULL == tjson_gettype(value); }
+int tjson_isobject(const tjson_value *value) { return TJSON_TYPE_OBJECT == tjson_gettype(value); }
+int tjson_isarray(const tjson_value *value) { return TJSON_TYPE_ARRAY == tjson_gettype(value); }
 
 tjson_value *tjson_parse(const char **json_data);
 
