@@ -10,31 +10,31 @@ void print_json(tjson_value *value, int indent)
     switch (value->type)
     {
         case TJSON_TYPE_STRING:
-            printf("STRING : %s\n", value->data.string);
+            printf("STRING : %s\n", tjson_value_string(value));
             break;
         case TJSON_TYPE_NUMBER:
-            printf("NUMBER : %f\n", value->data.number);
+            printf("NUMBER : %f\n", tjson_value_number(value));
             break;
         case TJSON_TYPE_NULL:
             printf("NULL : null\n");
             break;
         case TJSON_TYPE_BOOLEAN:
-            printf("BOOLEAN : %d\n", value->data.boolean);
+            printf("BOOLEAN : %d\n", tjson_value_boolean(value));
             break;
         case TJSON_TYPE_OBJECT:
             printf("OBJECT : \n");
             for (i = 0; i < value->data.object->count; i++)
             {
                 for (j = 0; j < indent + 4; j++) printf(" ");
-                printf("%s : ", value->data.object->names[i]);
-                print_json(value->data.object->values[i], indent + 4);
+                printf("%s : ", value->data.object->keys[i]);
+                print_json(tjson_value_object(value, value->data.object->keys[i]), indent + 4);
             }
             break;
         case TJSON_TYPE_ARRAY:
             printf("ARRAY : \n");
             for (i = 0; i < value->data.array->count; i++)
             {
-                print_json(value->data.array->items[i], indent + 4);
+                print_json(tjson_value_array(value, i), indent + 4);
             }
             break;
         default:
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     
     print_json(root, 0);
     
-    tjson_free(root);
+    tjson_value_free(root);
 
     return 0;
 }

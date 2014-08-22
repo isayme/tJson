@@ -21,7 +21,7 @@ typedef union tjson_metadata tjson_metadata;
 typedef struct tjson_value tjson_value;
 
 struct tjson_object {
-    const char **names;
+    const char **keys;
     tjson_value **values;
     size_t count;
 };
@@ -45,8 +45,9 @@ struct tjson_value {
     tjson_metadata data;
 };
 
+tjson_value *tjson_parse_data(const char *json_data);
 tjson_value *tjson_parse_file(const char *path);
-void tjson_free(tjson_value *value);
+void tjson_value_free(tjson_value *value);
 
 tjson_valuetype tjson_gettype(const tjson_value *value);
 int tjson_isstring(const tjson_value *value);
@@ -55,8 +56,14 @@ int tjson_isboolean(const tjson_value *value);
 int tjson_isnull(const tjson_value *value);
 int tjson_isobject(const tjson_value *value);
 int tjson_isarray(const tjson_value *value);
+int tjson_iserror(const tjson_value *value);
 
+const char *tjson_value_string(const tjson_value *value);
+double tjson_value_number(const tjson_value *value);
+int tjson_value_boolean(const tjson_value *value);
+int tjson_value_null(const tjson_value *value);
+tjson_value *tjson_value_object(const tjson_value *value, const char *key);
+tjson_value *tjson_value_array(const tjson_value *value, int index);
 
-#define TJSON_DEBUG() printf("%s:%d\n", __func__, __LINE__)
 
 #endif

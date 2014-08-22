@@ -17,10 +17,9 @@ int tjson_isboolean(const tjson_value *value) { return TJSON_TYPE_BOOLEAN == tjs
 int tjson_isnull(const tjson_value *value) { return TJSON_TYPE_NULL == tjson_gettype(value); }
 int tjson_isobject(const tjson_value *value) { return TJSON_TYPE_OBJECT == tjson_gettype(value); }
 int tjson_isarray(const tjson_value *value) { return TJSON_TYPE_ARRAY == tjson_gettype(value); }
+int tjson_iserror(const tjson_value *value) { return TJSON_TYPE_ERROR == tjson_gettype(value); }
 
-tjson_value *tjson_parse(const char **json_data);
-
-void tjson_free(tjson_value *value)
+void tjson_value_free(tjson_value *value)
 {
     int i;
     if (NULL == value) return;
@@ -36,10 +35,10 @@ void tjson_free(tjson_value *value)
         {
             for (i = 0; i < value->data.object->count; i++)
             {
-                free((void *)value->data.object->names[i]);
-                tjson_free(value->data.object->values[i]);
+                free((void *)value->data.object->keys[i]);
+                tjson_value_free(value->data.object->values[i]);
             }
-            free(value->data.object->names);
+            free(value->data.object->keys);
             free(value->data.object->values);
             free(value->data.object);
             break;
@@ -48,7 +47,7 @@ void tjson_free(tjson_value *value)
         {
             for (i = 0; i < value->data.array->count; i++)
             {
-                tjson_free(value->data.array->items[i]);
+                tjson_value_free(value->data.array->items[i]);
             }
             free(value->data.array);
             break;
@@ -59,6 +58,8 @@ void tjson_free(tjson_value *value)
 
     free(value);
 }
+
+tjson_value *tjson_parse(const char **json_data);
 
 tjson_value *tjson_parse_boolean(const char **json_data)
 {
@@ -183,7 +184,7 @@ tjson_value *tjson_parse_array(const char **json_data)
         item = tjson_parse(json_data);
         if (NULL == item)
         {
-            tjson_free(value);
+            tjson_value_free(value);
             return NULL;
         }
 
@@ -193,7 +194,7 @@ tjson_value *tjson_parse_array(const char **json_data)
 
         if (0 == tjson_skip_char(json_data, ',') && ']' != **json_data)
         {
-            tjson_free(value);
+            tjson_value_free(value);
             return NULL;
         }
     }
@@ -215,12 +216,11 @@ tjson_value *tjson_parse_object(const char **json_data)
     value->data.object = malloc(sizeof(tjson_object));
     if (NULL == value->data.object)
     {
-        TJSON_DEBUG();
         free(value);
         return NULL;
     }
     value->data.object->count = 0;
-    value->data.object->names = NULL;
+    value->data.object->keys = NULL;
     value->data.object->values = NULL;
     
     *json_data = *json_data + 1;
@@ -230,7 +230,7 @@ tjson_value *tjson_parse_object(const char **json_data)
     {
         if ('\"' != **json_data)
         {
-            tjson_free(value);
+            tjson_value_free(value);
             return NULL;
         }
 
@@ -243,27 +243,29 @@ tjson_value *tjson_parse_object(const char **json_data)
         }
 
         value->data.object->count++;
-        value->data.object->names = realloc(value->data.object->names, sizeof(const char *) * value->data.object->count);
+        value->data.object->keys = realloc(value->data.object->keys, sizeof(const char *) * value->data.object->count);
         value->data.object->values = realloc(value->data.object->values, sizeof(tjson_value *) * value->data.object->count);
-        value->data.object->names[value->data.object->count - 1] = malloc(len);
-        if (NULL == value->data.object->names[value->data.object->count - 1])
+        value->data.object->keys[value->data.object->count - 1] = malloc(len);
+        if (NULL == value->data.object->keys[value->data.object->count - 1])
         {
-            tjson_free(value);
+            tjson_value_free(value);
             return NULL;
         }
-        strncpy((char *)value->data.object->names[value->data.object->count - 1], *json_data + 1, len - 1);
+        memset((void *)value->data.object->keys[value->data.object->count - 1], 0, len);
+        strncpy((char *)value->data.object->keys[value->data.object->count - 1], *json_data + 1, len - 1);
+
         *json_data = *json_data + len + 1;
 
         if (0 == tjson_skip_char(json_data, ':'))
         {
-            tjson_free(value);
+            tjson_value_free(value);
             return NULL;
         }
 
         item = tjson_parse(json_data);
         if (NULL == item)
         {
-            tjson_free(value);
+            tjson_value_free(value);
             return NULL;
         }
 
@@ -272,7 +274,7 @@ tjson_value *tjson_parse_object(const char **json_data)
 
         if (0 == tjson_skip_char(json_data, ',') && '}' != **json_data)
         {
-            tjson_free(value);
+            tjson_value_free(value);
             return NULL;
         }
     }
@@ -336,6 +338,10 @@ tjson_value *tjson_parse(const char **json_data)
     return value;
 }
 
+tjson_value *tjson_parse_data(const char *json_data)
+{
+    return tjson_parse(&json_data);
+}
 tjson_value *tjson_parse_file(const char *path)
 {
     FILE *fp = NULL;
@@ -343,7 +349,7 @@ tjson_value *tjson_parse_file(const char *path)
     
     struct stat st;
     char *json_data = NULL;
-    const char *tmp;
+
     if (NULL == path) return NULL;
     
     if (-1 == stat(path, &st)) return NULL;
@@ -356,11 +362,50 @@ tjson_value *tjson_parse_file(const char *path)
     
     fread(json_data, 1, st.st_size, fp);
 
-    tmp = json_data;
-    root = tjson_parse(&tmp);
+    root = tjson_parse_data(json_data);
     
     free(json_data);
     fclose(fp);
     return root;
 }
 
+const char *tjson_value_string(const tjson_value *value)
+{ 
+    return (!value || !tjson_isstring(value)) ? NULL : value->data.string;
+}
+double tjson_value_number(const tjson_value *value)
+{ 
+    return (!value || !tjson_isnumber(value)) ? 0 : value->data.number;
+}
+int tjson_value_boolean(const tjson_value *value)
+{ 
+    return (!value || !tjson_isboolean(value)) ? -1 : value->data.boolean;
+}
+int tjson_value_null(const tjson_value *value)
+{ 
+    return (!value || !tjson_isstring(value)) ? 0 : value->data.null;
+}
+tjson_value *tjson_value_object(const tjson_value *value, const char *key)
+{
+    int i;
+
+    if (NULL == value || NULL == key || !tjson_isobject(value)) return NULL;
+
+    for (i = 0; i < value->data.object->count; i++)
+    {
+        if (0 == strcmp(key, value->data.object->keys[i]))
+        {
+            return value->data.object->values[i];
+        }
+    }
+
+    return NULL;
+}
+tjson_value *tjson_value_array(const tjson_value *value, int index)
+{
+    if (NULL == value
+        || !tjson_isarray(value)
+        || value->data.array->count <= index) return NULL;
+
+    return value->data.array->items[index];
+}
