@@ -1,63 +1,46 @@
 #include "tjson.h"
 
-void print_object(tjson_value *root)
+void print_json(tjson_value *value, int indent)
 {
-    int i;
-    tjson_value *value = NULL;
-
-    if (tjson_isobject(root))
-    {
-        printf("len = %d\n", root->value.object->count);
-
-        for (i = 0; i < root->value.object->count; i++)
-        {
-            printf("OBJECT : %s\n", root->value.object->names[i]);
-
-        
-        }
-    }
-}
-
-void print_array(tjson_value *root)
-{
-    int i;
-    tjson_value *value = NULL;
-
-    if (tjson_isarray(root))
-    {
-        printf("len = %d\n", root->value.array->count);
-
-        for (i = 0; i < root->value.array->count; i++)
-        {
-            value = root->value.array->items[i];
-
-            switch (value->type)
-            {
-                case TJSON_VALUE_TYPE_STRING:
-                    printf("STRING : %s\n", value->value.string);
-                    break;
-                case TJSON_VALUE_TYPE_NUMBER:
-                    printf("NUMBER : %f\n", value->value.number);
-                    break;
-                case TJSON_VALUE_TYPE_NULL:
-                    printf("NULL : %d\n", value->value.null);
-                    break;
-                case TJSON_VALUE_TYPE_BOOLEAN:
-                    printf("BOOLEAN : %d\n", value->value.boolean);
-                    break;
-                case TJSON_VALUE_TYPE_ARRAY:
-                    print_array(value);
-                    break;
-                case TJSON_VALUE_TYPE_OBJECT:
-                    print_object(value);
-                    break;
-                default:
-                    printf("unkown type: %d\n", value->type);
-                break;
-            }
-        }
-    }
+    int i, j;
+    if (NULL == value) return;
     
+    for (i = 0; i < indent; i++) printf(" ");
+    
+    switch (value->type)
+    {
+        case TJSON_TYPE_STRING:
+            printf("STRING : %s\n", value->data.string);
+            break;
+        case TJSON_TYPE_NUMBER:
+            printf("NUMBER : %f\n", value->data.number);
+            break;
+        case TJSON_TYPE_NULL:
+            printf("NULL : null\n");
+            break;
+        case TJSON_TYPE_BOOLEAN:
+            printf("BOOLEAN : %d\n", value->data.boolean);
+            break;
+        case TJSON_TYPE_OBJECT:
+            printf("OBJECT : \n");
+            for (i = 0; i < value->data.object->count; i++)
+            {
+                for (j = 0; j < indent + 4; j++) printf(" ");
+                printf("%s : ", value->data.object->names[i]);
+                print_json(value->data.object->values[i], indent + 4);
+            }
+            break;
+        case TJSON_TYPE_ARRAY:
+            printf("ARRAY : \n");
+            for (i = 0; i < value->data.array->count; i++)
+            {
+                print_json(value->data.array->items[i], indent + 4);
+            }
+            break;
+        default:
+            printf("unkown type: %d\n", value->type);
+        break;
+    }
 }
 
 int main(int argc, char **argv)
@@ -77,7 +60,8 @@ int main(int argc, char **argv)
         return -1;
     }
     
-    print_array(root);
+    
+    print_json(root, 0);
     
     tjson_free(root);
 

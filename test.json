@@ -7,13 +7,16 @@
  [
     "a",
     1,
-    false,
+    {"ssdas":true,
+    "sss":null,
+    "aaa":43},
     true,
     null
  ],
  {
     "ssdas":true,
     "sss":null,
+    "bbb":[1, "5", false, null],
     "aaa":43},
  true  ,
  "dsa" ,  

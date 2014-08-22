@@ -10,7 +10,7 @@
 BINS := test
 
 # libs to be created
-LIBS := 
+LIBS := libtjson.so
 #-----------------------------------------------------------
 
 # compiler tool
@@ -25,7 +25,7 @@ SOFLAGS := -g -DLINUX -shared -fPIC -Iinc
 
 LDFLAGS := -Wl,-rpath,bin,-rpath, \
   -Lbin \
-	-lpthread
+	-lpthread -ltjson
 	
 # vpath indicate the searching path of the according file type
 SRCDIR := src $(shell ls -d src/*)
