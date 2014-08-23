@@ -3,12 +3,26 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "tjson.h"
 
 #define TJSON_SKIP_WHITESPACES(str) do {\
         while (isspace(**str)) (*str)++;\
     } while (0)
+
+int tjson_skip_char(const char **json_data, char ch)
+{
+    TJSON_SKIP_WHITESPACES(json_data);
+
+    if (ch != **json_data) return 0;
+    
+    *json_data = *json_data + 1;
+
+    TJSON_SKIP_WHITESPACES(json_data);
+
+    return 1;
+}
 
 tjson_valuetype tjson_gettype(const tjson_value *value) { return value ? value->type : TJSON_TYPE_ERROR; }
 int tjson_isstring(const tjson_value *value) { return TJSON_TYPE_STRING == tjson_gettype(value); }
@@ -145,19 +159,6 @@ tjson_value *tjson_parse_string(const char **json_data)
     return value;
 }
 
-int tjson_skip_char(const char **json_data, char ch)
-{
-    TJSON_SKIP_WHITESPACES(json_data);
-
-    if (ch != **json_data) return 0;
-    
-    *json_data = *json_data + 1;
-
-    TJSON_SKIP_WHITESPACES(json_data);
-
-    return 1;
-}
-
 tjson_value *tjson_parse_array(const char **json_data)
 {
     tjson_value *value = NULL;
@@ -177,7 +178,6 @@ tjson_value *tjson_parse_array(const char **json_data)
     value->data.array->items = NULL;
 
     *json_data = *json_data + 1;
-    TJSON_SKIP_WHITESPACES(json_data);
 
     while (']' != **json_data)
     {
