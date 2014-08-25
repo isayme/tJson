@@ -316,7 +316,8 @@ tjson_value *tjson_parse(const char **json_data)
             value = tjson_parse_null(json_data);
             break;
         }
-        case '-':
+        case '-':   // number
+        case '.':   // definition @http://json.org/ donot support number begin with POINT(.)
         case '0':
         case '1':
         case '2':
@@ -383,7 +384,7 @@ int tjson_value_boolean(const tjson_value *value)
 }
 int tjson_value_null(const tjson_value *value)
 { 
-    return (!value || !tjson_isstring(value)) ? 0 : value->data.null;
+    return (!value || !tjson_isnull(value)) ? -1 : value->data.null;
 }
 tjson_value *tjson_value_object(const tjson_value *value, const char *key)
 {
