@@ -317,7 +317,8 @@ tjson_value *tjson_parse(const char **json_data)
             break;
         }
         case '-':   // number
-        case '.':   // definition @http://json.org/ donot support number begin with POINT(.)
+        case '+':   // definition @http://json.org/ donot support number begin with POINT(.)/PLUS(+)
+        case '.':
         case '0':
         case '1':
         case '2':
