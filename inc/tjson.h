@@ -1,6 +1,11 @@
 #ifndef TJSON_H
 #define TJSON_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdio.h>
 
 typedef enum tjson_valuetype {
@@ -65,5 +70,8 @@ int tjson_value_null(const tjson_value *value);
 tjson_value *tjson_value_object(const tjson_value *value, const char *key);
 tjson_value *tjson_value_array(const tjson_value *value, int index);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
