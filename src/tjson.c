@@ -341,6 +341,9 @@ tjson_value *tjson_parse(const char **json_data)
 
 tjson_value *tjson_parse_data(const char *json_data)
 {
+    TJSON_SKIP_WHITESPACES(&json_data);
+    if ('[' != *json_data && '{' != *json_data) return NULL;
+    
     return tjson_parse(&json_data);
 }
 tjson_value *tjson_parse_file(const char *path)
