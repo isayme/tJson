@@ -52,7 +52,7 @@ struct tjson_value {
 
 tjson_value *tjson_parse_data(const char *json_data);
 tjson_value *tjson_parse_file(const char *path);
-void tjson_value_free(tjson_value *value);
+void tjson_value_free(tjson_value **root);
 
 tjson_valuetype tjson_gettype(const tjson_value *value);
 int tjson_isstring(const tjson_value *value);

@@ -33,11 +33,13 @@ int tjson_isobject(const tjson_value *value) { return TJSON_TYPE_OBJECT == tjson
 int tjson_isarray(const tjson_value *value) { return TJSON_TYPE_ARRAY == tjson_gettype(value); }
 int tjson_iserror(const tjson_value *value) { return TJSON_TYPE_ERROR == tjson_gettype(value); }
 
-void tjson_value_free(tjson_value *value)
+void tjson_value_free(tjson_value **root)
 {
     int i;
-    if (NULL == value) return;
-
+    tjson_value *value = NULL;
+    if (NULL == root || NULL == *root) return;
+    value = *root;
+    
     switch (value->type)
     {
         case TJSON_TYPE_STRING:
@@ -50,7 +52,7 @@ void tjson_value_free(tjson_value *value)
             for (i = 0; i < value->data.object->count; i++)
             {
                 free((void *)value->data.object->keys[i]);
-                tjson_value_free(value->data.object->values[i]);
+                tjson_value_free(&value->data.object->values[i]);
             }
             free(value->data.object->keys);
             free(value->data.object->values);
@@ -61,7 +63,7 @@ void tjson_value_free(tjson_value *value)
         {
             for (i = 0; i < value->data.array->count; i++)
             {
-                tjson_value_free(value->data.array->items[i]);
+                tjson_value_free(&value->data.array->items[i]);
             }
             free(value->data.array);
             break;
@@ -71,6 +73,7 @@ void tjson_value_free(tjson_value *value)
     }
 
     free(value);
+    *root = NULL;
 }
 
 tjson_value *tjson_parse(const char **json_data);
@@ -184,7 +187,7 @@ tjson_value *tjson_parse_array(const char **json_data)
         item = tjson_parse(json_data);
         if (NULL == item)
         {
-            tjson_value_free(value);
+            tjson_value_free(&value);
             return NULL;
         }
 
@@ -194,7 +197,7 @@ tjson_value *tjson_parse_array(const char **json_data)
 
         if (0 == tjson_skip_char(json_data, ',') && ']' != **json_data)
         {
-            tjson_value_free(value);
+            tjson_value_free(&value);
             return NULL;
         }
     }
@@ -230,7 +233,7 @@ tjson_value *tjson_parse_object(const char **json_data)
     {
         if ('\"' != **json_data)
         {
-            tjson_value_free(value);
+            tjson_value_free(&value);
             return NULL;
         }
 
@@ -248,7 +251,7 @@ tjson_value *tjson_parse_object(const char **json_data)
         value->data.object->keys[value->data.object->count - 1] = malloc(len);
         if (NULL == value->data.object->keys[value->data.object->count - 1])
         {
-            tjson_value_free(value);
+            tjson_value_free(&value);
             return NULL;
         }
         memset((void *)value->data.object->keys[value->data.object->count - 1], 0, len);
@@ -258,14 +261,14 @@ tjson_value *tjson_parse_object(const char **json_data)
 
         if (0 == tjson_skip_char(json_data, ':'))
         {
-            tjson_value_free(value);
+            tjson_value_free(&value);
             return NULL;
         }
 
         item = tjson_parse(json_data);
         if (NULL == item)
         {
-            tjson_value_free(value);
+            tjson_value_free(&value);
             return NULL;
         }
 
@@ -274,7 +277,7 @@ tjson_value *tjson_parse_object(const char **json_data)
 
         if (0 == tjson_skip_char(json_data, ',') && '}' != **json_data)
         {
-            tjson_value_free(value);
+            tjson_value_free(&value);
             return NULL;
         }
     }

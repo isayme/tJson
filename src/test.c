@@ -63,7 +63,9 @@ int main(int argc, char **argv)
     
     print_json(root, 0);
     
-    tjson_value_free(root);
+    tjson_value_free(&root);
+    tjson_value_free(&root);
+    tjson_value_free(&root);
 
     return 0;
 }
