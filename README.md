@@ -12,7 +12,7 @@ tjson_value *tjson_parse_data(const char *json_data);
 tjson_value *tjson_parse_file(const char *path);
 
 // free memory of a json object
-void tjson_value_free(tjson_value **value);
+void tjson_value_free(tjson_value **root);
 ```
 
 ```
