@@ -40,8 +40,7 @@ void tjson_value_free(tjson_value **root)
     if (NULL == root || NULL == *root) return;
     value = *root;
     
-    switch (value->type)
-    {
+    switch (value->type) {
         case TJSON_TYPE_STRING:
         {
             free((void *)value->data.string);
@@ -49,8 +48,7 @@ void tjson_value_free(tjson_value **root)
         }
         case TJSON_TYPE_OBJECT:
         {
-            for (i = 0; i < value->data.object->count; i++)
-            {
+            for (i = 0; i < value->data.object->count; i++) {
                 free((void *)value->data.object->keys[i]);
                 tjson_value_free(&value->data.object->values[i]);
             }
@@ -61,8 +59,7 @@ void tjson_value_free(tjson_value **root)
         }
         case TJSON_TYPE_ARRAY:
         {
-            for (i = 0; i < value->data.array->count; i++)
-            {
+            for (i = 0; i < value->data.array->count; i++) {
                 tjson_value_free(&value->data.array->items[i]);
             }
             free(value->data.array);
@@ -86,18 +83,13 @@ tjson_value *tjson_parse_boolean(const char **json_data)
     if (NULL == value) return NULL;
     value->type = TJSON_TYPE_BOOLEAN;
 
-    if (0 == strncmp(*json_data, "true", strlen("true")))
-    {
+    if (0 == strncmp(*json_data, "true", strlen("true"))) {
         value->data.boolean = 1;
         *json_data = *json_data + strlen("true");
-    }
-    else if (0 == strncmp(*json_data, "false", strlen("false")))
-    {
+    } else if (0 == strncmp(*json_data, "false", strlen("false"))) {
         value->data.boolean = 0;
         *json_data = *json_data + strlen("false");
-    }
-    else
-    {
+    } else {
         free(value);
         return NULL;
     }
@@ -137,8 +129,7 @@ tjson_value *tjson_parse_string(const char **json_data)
     tjson_value *value = NULL;
     int len = 1;
     
-    while ('\"' != *(*json_data + len))
-    {
+    while ('\"' != *(*json_data + len)) {
         if ('\0' == *(*json_data + len)) return NULL;
         if ('\\' == *(*json_data + len)) len++;
         len++;
@@ -149,8 +140,7 @@ tjson_value *tjson_parse_string(const char **json_data)
     value->type = TJSON_TYPE_STRING;
     
     value->data.string = malloc(len);
-    if (NULL == value->data.string)
-    {
+    if (NULL == value->data.string) {
         free(value);
         return NULL;
     }
@@ -172,8 +162,7 @@ tjson_value *tjson_parse_array(const char **json_data)
     if (NULL == value) return NULL;
     value->type = TJSON_TYPE_ARRAY;
     value->data.array = malloc(sizeof(tjson_array));
-    if (NULL == value->data.array)
-    {        
+    if (NULL == value->data.array) {        
         free(value);
         return NULL;
     }
@@ -182,11 +171,9 @@ tjson_value *tjson_parse_array(const char **json_data)
 
     *json_data = *json_data + 1;
 
-    while (']' != **json_data)
-    {
+    while (']' != **json_data) {
         item = tjson_parse(json_data);
-        if (NULL == item)
-        {
+        if (NULL == item) {
             tjson_value_free(&value);
             return NULL;
         }
@@ -195,8 +182,7 @@ tjson_value *tjson_parse_array(const char **json_data)
         value->data.array->items = realloc(value->data.array->items, sizeof(tjson_value *) * value->data.array->count);
         value->data.array->items[value->data.array->count - 1] = item;
 
-        if (0 == tjson_skip_char(json_data, ',') && ']' != **json_data)
-        {
+        if (0 == tjson_skip_char(json_data, ',') && ']' != **json_data) {
             tjson_value_free(&value);
             return NULL;
         }
@@ -217,8 +203,7 @@ tjson_value *tjson_parse_object(const char **json_data)
     if (NULL == value) return NULL;
     value->type = TJSON_TYPE_OBJECT;
     value->data.object = malloc(sizeof(tjson_object));
-    if (NULL == value->data.object)
-    {
+    if (NULL == value->data.object) {
         free(value);
         return NULL;
     }
@@ -229,17 +214,14 @@ tjson_value *tjson_parse_object(const char **json_data)
     *json_data = *json_data + 1;
     TJSON_SKIP_WHITESPACES(json_data);
 
-    while ('}' != **json_data)
-    {
-        if ('\"' != **json_data)
-        {
+    while ('}' != **json_data) {
+        if ('\"' != **json_data) {
             tjson_value_free(&value);
             return NULL;
         }
 
         len = 1;
-        while ('\"' != *(*json_data + len))
-        {
+        while ('\"' != *(*json_data + len)) {
             if ('\0' == *(*json_data + len)) return NULL;
             if ('\\' == *(*json_data + len)) len++;
             len++;
@@ -249,8 +231,7 @@ tjson_value *tjson_parse_object(const char **json_data)
         value->data.object->keys = realloc(value->data.object->keys, sizeof(const char *) * value->data.object->count);
         value->data.object->values = realloc(value->data.object->values, sizeof(tjson_value *) * value->data.object->count);
         value->data.object->keys[value->data.object->count - 1] = malloc(len);
-        if (NULL == value->data.object->keys[value->data.object->count - 1])
-        {
+        if (NULL == value->data.object->keys[value->data.object->count - 1]) {
             tjson_value_free(&value);
             return NULL;
         }
@@ -259,24 +240,20 @@ tjson_value *tjson_parse_object(const char **json_data)
 
         *json_data = *json_data + len + 1;
 
-        if (0 == tjson_skip_char(json_data, ':'))
-        {
+        if (0 == tjson_skip_char(json_data, ':')) {
             tjson_value_free(&value);
             return NULL;
         }
 
         item = tjson_parse(json_data);
-        if (NULL == item)
-        {
+        if (NULL == item) {
             tjson_value_free(&value);
             return NULL;
         }
 
         value->data.object->values[value->data.object->count - 1] = item;
         
-
-        if (0 == tjson_skip_char(json_data, ',') && '}' != **json_data)
-        {
+        if (0 == tjson_skip_char(json_data, ',') && '}' != **json_data) {
             tjson_value_free(&value);
             return NULL;
         }
@@ -399,10 +376,8 @@ tjson_value *tjson_value_object(const tjson_value *value, const char *key)
 
     if (NULL == value || NULL == key || !tjson_isobject(value)) return NULL;
 
-    for (i = 0; i < value->data.object->count; i++)
-    {
-        if (0 == strcmp(key, value->data.object->keys[i]))
-        {
+    for (i = 0; i < value->data.object->count; i++) {
+        if (0 == strcmp(key, value->data.object->keys[i])) {
             return value->data.object->values[i];
         }
     }

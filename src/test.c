@@ -7,8 +7,7 @@ void print_json(tjson_value *value, int indent)
     
     for (i = 0; i < indent; i++) printf(" ");
     
-    switch (value->type)
-    {
+    switch (value->type) {
         case TJSON_TYPE_STRING:
             printf("STRING : %s\n", tjson_value_string(value));
             break;
@@ -23,8 +22,7 @@ void print_json(tjson_value *value, int indent)
             break;
         case TJSON_TYPE_OBJECT:
             printf("OBJECT : \n");
-            for (i = 0; i < value->data.object->count; i++)
-            {
+            for (i = 0; i < value->data.object->count; i++) {
                 for (j = 0; j < indent + 4; j++) printf(" ");
                 printf("%s : ", value->data.object->keys[i]);
                 print_json(tjson_value_object(value, value->data.object->keys[i]), indent + 4);
@@ -32,8 +30,7 @@ void print_json(tjson_value *value, int indent)
             break;
         case TJSON_TYPE_ARRAY:
             printf("ARRAY : \n");
-            for (i = 0; i < value->data.array->count; i++)
-            {
+            for (i = 0; i < value->data.array->count; i++) {
                 print_json(tjson_value_array(value, i), indent + 4);
             }
             break;
@@ -47,15 +44,13 @@ int main(int argc, char **argv)
 {
     tjson_value *root = NULL;
 
-    if (argc < 2) 
-    {
+    if (argc < 2) {
         printf("must specify a json file!\n");
         return -1;
     }
     
     root = tjson_parse_file(argv[1]);
-    if (NULL == root)
-    {
+    if (NULL == root) {
         printf("root is NULL\n");
         return -1;
     }
